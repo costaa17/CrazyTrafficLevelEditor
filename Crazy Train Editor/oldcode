@@ -1,3 +1,5 @@
+hello
+
 var trackingArea: NSTrackingArea?
 var tileWidth: CGFloat = 1
 var tileHeight: CGFloat = 1
