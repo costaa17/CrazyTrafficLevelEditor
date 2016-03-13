@@ -95,6 +95,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             do {
                 try jsonString.writeToFile(jsonFilePath, atomically: true, encoding: NSUTF8StringEncoding)
                 Swift.print("JSON data was written to teh file successfully!")
+                //editorView.setData(jsonFilePath)
                 
             } catch let error as NSError {
                 Swift.print("Couldn't write to file: \(error.localizedDescription)")

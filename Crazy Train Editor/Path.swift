@@ -191,12 +191,13 @@ public class Path {
         case Type.garbage: dataDictionary["Type"] = "garbage"
         }
         var pointsArray: [[[CGFloat]]] = []
+        
         for curve in path{
             var curvesArray: [[CGFloat]] = []
             for point in curve{
                 var pointArray: [CGFloat] = []
-                pointArray.append(point.x)
-                pointArray.append(point.y)
+                pointArray.append(dataPoint(point).x)
+                pointArray.append(dataPoint(point).y)
                 curvesArray.append(pointArray)
             }
             pointsArray.append(curvesArray)

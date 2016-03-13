@@ -45,8 +45,8 @@ class EditorView: NSView {
             
         case "garbage":
             typeButton = Type.garbage
-
-
+            
+            
             
         default:
             typeButton = Type.road
@@ -62,7 +62,7 @@ class EditorView: NSView {
         isEditing = false
         addNewCurve = true
     }
-
+    
     
     func setup(size: NSSize) {
         
@@ -82,70 +82,135 @@ class EditorView: NSView {
         
         trackingArea = NSTrackingArea(rect: self.bounds, options: [NSTrackingAreaOptions.ActiveInKeyWindow, NSTrackingAreaOptions.MouseMoved], owner: self, userInfo: nil)
         self.addTrackingArea(trackingArea)
-        //setData()
+        //setData("~/Desktop/test.json")
+        setData("/Users/CostaA17/Desktop/test.json")
+    }
+    func setData(path: String){
+        Swift.print("setData")
+        var points: [CGPoint] = []
+        var pathArray: [[CGPoint]] = []
+        
+        do {
+            let contents = try NSString(contentsOfFile: path, usedEncoding: nil) as String
+            
+            if let data = contents.dataUsingEncoding(NSUTF8StringEncoding) {
+                do {
+                    let dic = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? [String:AnyObject]
+                    let pathsArray = dic!["paths"]// array of dictionaries
+                    for path in pathsArray as! NSArray{
+                        let pointsArray = path["points"] as! NSArray // array of CGPoint arrays
+                        for curve in pointsArray{
+                            for p in curve as! NSArray{
+                                
+                                let point = p as! NSArray
+                                let flx = CGFloat(point[0].floatValue)
+                                let fly = CGFloat(point[1].floatValue)
+                                let makePoint = (CGPointMake(flx , fly ))
+                                let x: CGFloat = (CGFloat(MARGIN_LEFT) + makePoint.x) * CGFloat(tileWidth)
+                                let y: CGFloat = (CGFloat(MARGIN_TOP) + makePoint.y) * CGFloat(tileHeight)
+                                points.append(CGPointMake(x , y))
+                                
+                            }
+                            pathArray.append(points)
+                            points = []
+                        }
+                        
+                        let typeString = path["Type"]
+                        
+                        switch typeString as! String{
+                        case "road":
+                            paths.append(Path(type: Type.road, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+                        case "rail":
+                            paths.append(Path(type: Type.rail, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+                        case "walk":
+                            paths.append(Path(type: Type.walk, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+                        case "cross":
+                            paths.append(Path(type: Type.cross, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+                        case "crazyPedestrian":
+                            paths.append(Path(type: Type.crazyPedestrian, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+                        case "garbage":
+                            paths.append(Path(type: Type.garbage, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+                        default: break
+                            
+                        }
+                        
+                        
+                        
+                    }
+                    
+                }catch{
+                    
+                }
+            }
+        } catch let error as NSError {
+            Swift.print(error)
+            
+            // contents could not be loaded
+        }
+        
     }
     
     /*func setData(){
-        let data = ""
-        
-        let indexes = data.characters.split("/").map() {String($0)} // get each path
-        for(var i = 0; i < indexes.count; i++){
-            
-            var pathArray: [[CGPoint]] = []
-            var points: [CGPoint] = []
-            let typeString = indexes[i].characters.split(":").map() {String($0)}
-            let pathAString = typeString[1].characters.split("#").map() {String($0)}
-            
-            //let pointsString = pathAString[1].characters.split("@").map() {String($0)}
-            for a in pathAString{
-                let pointsString = a.characters.split("@").map() {String($0)}
-                
-                for var p = 0; p < pointsString.count; p = p + 1{
-                    
-                    let xyString = pointsString[p].characters.split(",").map() {String($0)}
-                    let flx = CGFloat((xyString[0] as NSString).floatValue)
-                    let fly = CGFloat((xyString[1] as NSString).floatValue)
-                    let point = (CGPointMake(flx , fly ))
-                    let x: CGFloat = (CGFloat(MARGIN_LEFT) + point.x) * CGFloat(tileWidth)
-                    let y: CGFloat = (CGFloat(MARGIN_TOP) + point.y) * CGFloat(tileHeight)
-                    points.append(CGPointMake(x , y))
-                }
-                pathArray.append(points)
-                points = []
-            }
-            
-            // create the Path
-            if typeString[0] == "road"{
-                paths.append(Path(type: Type.road, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
-            }
-            
-            if typeString[0] == "rail"{
-                paths.append(Path(type: Type.rail, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
-                
-            }
-            
-            if typeString[0] == "walk"{
-                paths.append(Path(type: Type.walk, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
-                
-            }
-            
-            if typeString[0] == "cross"{
-                paths.append(Path(type: Type.cross, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
-                
-            }
-            if typeString[0] == "crazyPedestrian"{
-                paths.append(Path(type: Type.crazyPedestrian, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
-                
-            }
-            if typeString[0] == "garbage"{
-                paths.append(Path(type: Type.garbage, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
-                
-            }
-
-
-        }
-        
-
+    let data = ""
+    
+    let indexes = data.characters.split("/").map() {String($0)} // get each path
+    for(var i = 0; i < indexes.count; i++){
+    
+    var pathArray: [[CGPoint]] = []
+    var points: [CGPoint] = []
+    let typeString = indexes[i].characters.split(":").map() {String($0)}
+    let pathAString = typeString[1].characters.split("#").map() {String($0)}
+    
+    //let pointsString = pathAString[1].characters.split("@").map() {String($0)}
+    for a in pathAString{
+    let pointsString = a.characters.split("@").map() {String($0)}
+    
+    for var p = 0; p < pointsString.count; p = p + 1{
+    
+    let xyString = pointsString[p].characters.split(",").map() {String($0)}
+    let flx = CGFloat((xyString[0] as NSString).floatValue)
+    let fly = CGFloat((xyString[1] as NSString).floatValue)
+    let point = (CGPointMake(flx , fly ))
+    let x: CGFloat = (CGFloat(MARGIN_LEFT) + point.x) * CGFloat(tileWidth)
+    let y: CGFloat = (CGFloat(MARGIN_TOP) + point.y) * CGFloat(tileHeight)
+    points.append(CGPointMake(x , y))
+    }
+    pathArray.append(points)
+    points = []
+    }
+    
+    // create the Path
+    if typeString[0] == "road"{
+    paths.append(Path(type: Type.road, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+    }
+    
+    if typeString[0] == "rail"{
+    paths.append(Path(type: Type.rail, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+    
+    }
+    
+    if typeString[0] == "walk"{
+    paths.append(Path(type: Type.walk, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+    
+    }
+    
+    if typeString[0] == "cross"{
+    paths.append(Path(type: Type.cross, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+    
+    }
+    if typeString[0] == "crazyPedestrian"{
+    paths.append(Path(type: Type.crazyPedestrian, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+    
+    }
+    if typeString[0] == "garbage"{
+    paths.append(Path(type: Type.garbage, tileWidth: tileWidth, tileHeight: tileHeight, pointsArray: pathArray))
+    
+    }
+    
+    
+    }
+    
+    
     }*/
     
     
@@ -328,5 +393,5 @@ class EditorView: NSView {
         return dataDictionary
     }
     
-   }
+}
 
